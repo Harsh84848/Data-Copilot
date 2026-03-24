@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pandas
+scikit-learn
+motor
+python-multipart
+pymongo
+framer-motion
+axios
+nl_pandas
