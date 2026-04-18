@@ -4,7 +4,7 @@ import {
   Table as TableIcon, AlertCircle, Zap, LayoutGrid, Users as People, FileText, ChevronRight
 } from "lucide-react";
 
-export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUpload }) {
+export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUpload, teamCount, tasksCount }) {
   return (
     <div style={{ width: 280, background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', transition: 'all 0.3s' }}>
       <div style={{ padding: '32px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -18,7 +18,7 @@ export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUploa
         {/* Project Context */}
         <div style={{ margin: '0 12px 24px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: 16, border: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>PROJECT CONTEXT</div>
-          <div style={{ fontSize: 14, fontWeight: 700 }}>Startup Alpha</div>
+          <div style={{ fontSize: 14, fontWeight: 700 }}>NexaVault AI</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }}></div>
             <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>MANAGEMENT ACTIVE</span>
@@ -47,8 +47,8 @@ export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUploa
         <div style={{ padding: '24px 12px 12px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
            Startup OS
         </div>
-        <SidebarItem icon={LayoutGrid} text="Project Board" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} />
-        <SidebarItem icon={People} text="Team Squad" active={activeTab === "team"} onClick={() => setActiveTab("team")} />
+        <SidebarItem icon={LayoutGrid} text="Project Board" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} badge={tasksCount} />
+        <SidebarItem icon={People} text="Team Squad" active={activeTab === "team"} onClick={() => setActiveTab("team")} badge={teamCount} />
         <SidebarItem icon={FileText} text="Client Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
 
         {dataInfo && (
@@ -81,9 +81,14 @@ export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUploa
   );
 }
 
-const SidebarItem = ({ icon: Icon, text, active, onClick }) => (
-  <div onClick={onClick} className={`sidebar-item ${active ? 'active' : ''}`} style={{ marginBottom: 4 }}>
+const SidebarItem = ({ icon: Icon, text, active, onClick, badge }) => (
+  <div onClick={onClick} className={`sidebar-item ${active ? 'active' : ''}`} style={{ marginBottom: 4, display: 'flex', alignItems: 'center' }}>
     <Icon size={18} />
-    {text}
+    <span style={{ marginLeft: 8, flex: 1 }}>{text}</span>
+    {badge !== undefined && (
+      <div style={{ background: active ? 'white' : 'rgba(255,255,255,0.1)', color: active ? 'var(--primary)' : 'var(--text-muted)', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 10 }}>
+        {badge}
+      </div>
+    )}
   </div>
 );

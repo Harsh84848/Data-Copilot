@@ -10,8 +10,8 @@ import Login from "./components/Login";
 import MLModels from "./components/MLModels";
 import Settings from "./components/Settings";
 import Conversations from "./components/Conversations";
-import ProjectBoard from "./components/ProjectBoard";
-import TeamSquad from "./components/TeamSquad";
+import ProjectBoard, { SAMPLE_TASKS } from "./components/ProjectBoard";
+import TeamSquad, { INITIAL_TEAM } from "./components/TeamSquad";
 import ClientReports from "./components/ClientReports";
 
 // Icons for the empty state
@@ -29,6 +29,31 @@ export default function App() {
   const [isAnalysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
   const [theme, setTheme] = useState("dark");
   const chatEndRef = useRef();
+
+  // Lifted state for live stats
+  const [tasks, setTasks] = useState([]);
+  const [usingLocalTasks, setUsingLocalTasks] = useState(false);
+  const [team, setTeam] = useState(INITIAL_TEAM);
+
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/tasks`);
+      const data = res.data;
+      if (Array.isArray(data) && data.length > 0) {
+        setTasks(data);
+      } else {
+        setTasks(SAMPLE_TASKS);
+        setUsingLocalTasks(true);
+      }
+    } catch (err) {
+      setTasks(SAMPLE_TASKS);
+      setUsingLocalTasks(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(scrollToBottom, [messages]);
@@ -84,8 +109,8 @@ export default function App() {
       case "ml": return <MLModels dataInfo={dataInfo} API_BASE_URL={API_BASE_URL} />;
       case "chat": return <Conversations messages={messages} queryInput={queryInput} setQueryInput={setQueryInput} askData={askData} chatEndRef={chatEndRef} />;
       case "settings": return <Settings user={user} />;
-      case "projects": return <ProjectBoard />;
-      case "team": return <TeamSquad />;
+      case "projects": return <ProjectBoard tasks={tasks} setTasks={setTasks} fetchTasks={fetchTasks} usingLocal={usingLocalTasks} />;
+      case "team": return <TeamSquad team={team} setTeam={setTeam} />;
       case "reports": return <ClientReports />;
       default: return <Dashboard dataInfo={dataInfo} />;
     }
@@ -98,7 +123,9 @@ export default function App() {
         dataInfo={dataInfo} 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        handleUpload={handleUpload} 
+        handleUpload={handleUpload}
+        teamCount={team.length}
+        tasksCount={tasks.filter(t => t.status !== 'done').length}
       />
 
       {/* ─── Main Content Area ─── */}
@@ -111,6 +138,7 @@ export default function App() {
           setActiveTab={setActiveTab}
           theme={theme}
           toggleTheme={toggleTheme}
+          notificationsCount={tasks.filter(t => t.status === 'todo').length}
         />
 
         {/* Dynamic View */}

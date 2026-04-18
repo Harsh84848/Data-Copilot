@@ -62,5 +62,65 @@ def query_dataframe(df, query):
                 avg_group = df.groupby(group_col)[target_col].mean().sort_values(ascending=False).head(10)
                 chart_data = {"chartType": "bar", "title": f"Avg {target_col} by {group_col}", "data": [{"name": k, "value": float(v)} for k, v in avg_group.items()], "xKey": "name", "yKey": "value"}
 
+    elif "lowest" in query or "min" in query or "bottom" in query:
+        target_col = next((c for c in numeric_cols if c.lower() in query), numeric_cols[0] if numeric_cols else None)
+        if target_col:
+            min_val = df[target_col].min()
+            result_text = f"The lowest {target_col} is {min_val}."
+            if categorical_cols:
+                group_col = categorical_cols[0]
+                bottom_group = df.groupby(group_col)[target_col].min().sort_values(ascending=True).head(10)
+                chart_data = {"chartType": "bar", "title": f"Bottom 10 {group_col} by {target_col}", "data": [{"name": str(k), "value": float(v)} for k, v in bottom_group.items()], "xKey": "name", "yKey": "value"}
+
+    elif "sum" in query or "total" in query:
+        target_col = next((c for c in numeric_cols if c.lower() in query), numeric_cols[0] if numeric_cols else None)
+        if target_col:
+            sum_val = df[target_col].sum()
+            result_text = f"The total sum of {target_col} is {sum_val:.2f}."
+            if categorical_cols:
+                group_col = categorical_cols[0]
+                sum_group = df.groupby(group_col)[target_col].sum().sort_values(ascending=False).head(10)
+                chart_data = {"chartType": "bar", "title": f"Total {target_col} by {group_col}", "data": [{"name": str(k), "value": float(v)} for k, v in sum_group.items()], "xKey": "name", "yKey": "value"}
+                
+    elif "count" in query or "how many" in query:
+        group_col = next((c for c in categorical_cols if c.lower() in query), categorical_cols[0] if categorical_cols else None)
+        if group_col:
+            count_group = df[group_col].value_counts().head(10)
+            result_text = f"Here is the count distribution for {group_col}."
+            chart_data = {"chartType": "bar", "title": f"Count by {group_col}", "data": [{"name": str(k), "value": int(v)} for k, v in count_group.items()], "xKey": "name", "yKey": "value"}
+        else:
+            result_text = f"There are {len(df)} total rows."
+
+    elif "median" in query:
+        target_col = next((c for c in numeric_cols if c.lower() in query), numeric_cols[0] if numeric_cols else None)
+        if target_col:
+            median_val = df[target_col].median()
+            result_text = f"The median {target_col} is {median_val:.2f}."
+
+    elif "explain" in query or "insight" in query or "summary" in query or "overview" in query:
+        num_rows = len(df)
+        num_cols = len(headers)
+        num_missing = df.isnull().sum().sum()
+        sparsity = (num_missing / (num_rows * num_cols)) * 100 if (num_rows * num_cols) > 0 else 0
+        
+        insights = [
+            f"Your dataset contains {num_rows:,} rows and {num_cols} columns.",
+            f"There are {len(numeric_cols)} numeric columns and {len(categorical_cols)} categorical columns.",
+            f"Overall missing values: {num_missing:,} ({sparsity:.1f}% sparsity)."
+        ]
+        
+        if numeric_cols:
+            highest_var_col = df[numeric_cols].var().idxmax()
+            insights.append(f"The column '{highest_var_col}' has the highest variance (spread of values).")
+            
+        result_text = "**Data Insights:**\n\n• " + "\n• ".join(insights)
+        
+        # We also provide a small distribution count of missing values if there are any
+        missing_by_col = df.isnull().sum()
+        top_missing = missing_by_col[missing_by_col > 0].sort_values(ascending=False).head(5)
+        if not top_missing.empty:
+            result_text += f"\n\n**Missing Data Alert:** The column '{top_missing.index[0]}' has the most missing values ({top_missing.iloc[0]})."
+            chart_data = {"chartType": "bar", "title": "Top Missing Values", "data": [{"name": k, "value": int(v)} for k, v in top_missing.items()], "xKey": "name", "yKey": "value"}
+
     # Add more rules as needed...
     return {"text": result_text, "chart": chart_data}

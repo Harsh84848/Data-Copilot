@@ -5,37 +5,46 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const API_BASE_URL = "http://localhost:8010";
 
-export default function ProjectBoard() {
-  const [tasks, setTasks] = useState([]);
+export const SAMPLE_TASKS = [
+  { _id: 's1', text: 'Set up CI/CD pipeline with GitHub Actions', priority: 'High', type: 'DevOps', staff: 'Priya', status: 'done' },
+  { _id: 's2', text: 'Design landing page & brand identity kit', priority: 'High', type: 'Design', staff: 'Ananya', status: 'done' },
+  { _id: 's3', text: 'Build user authentication & onboarding flow', priority: 'High', type: 'Dev', staff: 'Rahul', status: 'review' },
+  { _id: 's4', text: 'Integrate Stripe payment gateway', priority: 'Medium', type: 'Dev', staff: 'Rahul', status: 'progress' },
+  { _id: 's5', text: 'Train ML model for churn prediction', priority: 'Medium', type: 'Data', staff: 'Sneha', status: 'progress' },
+  { _id: 's6', text: 'Conduct 10 user research interviews', priority: 'High', type: 'Product', staff: 'Karan', status: 'todo' },
+  { _id: 's7', text: 'Write investor pitch deck for Series A', priority: 'High', type: 'Strategy', staff: 'Arjun', status: 'todo' },
+  { _id: 's8', text: 'Set up analytics dashboard with Mixpanel', priority: 'Low', type: 'Dev', staff: 'Priya', status: 'todo' },
+];
+
+export default function ProjectBoard({ tasks, setTasks, fetchTasks, usingLocal }) {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newTask, setNewTask] = useState({ text: '', priority: 'Medium', type: 'Dev', staff: 'Sarah' });
-  const [loading, setLoading] = useState(true);
+  const [newTask, setNewTask] = useState({ text: '', priority: 'Medium', type: 'Dev', staff: 'Rahul' });
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => { fetchTasks(); }, []);
-
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/tasks`);
-      // If collection is empty, the response might be an empty array
-      setTasks(res.data);
-    } catch (err) {
-      console.error("Fetch tasks failed", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // fetchTasks is now passed as prop
 
   const handleAddTask = async (e) => {
     e.preventDefault();
+    if (usingLocal) {
+      const localTask = { _id: 'l' + Date.now(), ...newTask, status: 'todo' };
+      setTasks(prev => [...prev, localTask]);
+      setShowAddModal(false);
+      setNewTask({ text: '', priority: 'Medium', type: 'Dev', staff: 'Rahul' });
+      return;
+    }
     try {
       await axios.post(`${API_BASE_URL}/tasks`, { ...newTask, status: 'todo' });
       fetchTasks();
       setShowAddModal(false);
-      setNewTask({ text: '', priority: 'Medium', type: 'Dev', staff: 'Sarah' });
+      setNewTask({ text: '', priority: 'Medium', type: 'Dev', staff: 'Rahul' });
     } catch (err) { alert("Failed to add task."); }
   };
 
   const updateStatus = async (taskId, newStatus) => {
+    if (usingLocal) {
+      setTasks(prev => prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
+      return;
+    }
     try {
       await axios.put(`${API_BASE_URL}/tasks/${taskId}/status`, { status: newStatus });
       fetchTasks();
@@ -110,10 +119,13 @@ export default function ProjectBoard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                        <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)' }}>STAFF</label>
                        <select value={newTask.staff} onChange={e => setNewTask({...newTask, staff: e.target.value})} style={{ padding: '12px', borderRadius: 12, background: '#191c2b', border: '1px solid var(--border)', color: 'white' }}>
-                          <option>Sarah</option>
-                          <option>Alex</option>
-                          <option>Rick</option>
-                       </select>
+                           <option>Arjun</option>
+                           <option>Priya</option>
+                           <option>Rahul</option>
+                           <option>Sneha</option>
+                           <option>Karan</option>
+                           <option>Ananya</option>
+                        </select>
                     </div>
                  </div>
                  <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
