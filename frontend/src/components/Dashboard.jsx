@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
@@ -9,6 +11,26 @@ import {
 import { motion } from "framer-motion";
 
 export default function Dashboard({ dataInfo }) {
+  const [aiInsights, setAiInsights] = useState(null);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+
+  useEffect(() => {
+    if (dataInfo) {
+      fetchInsights();
+    }
+  }, [dataInfo]);
+
+  const fetchInsights = async () => {
+    setIsLoadingInsights(true);
+    try {
+      const res = await axios.get('http://localhost:8010/ai-insights');
+      setAiInsights(res.data.insights);
+    } catch (err) {
+      console.error(err);
+      setAiInsights("**Data loaded!** Configure the AI parameters in the backend `.env` file to see deep insights.");
+    }
+    setIsLoadingInsights(false);
+  };
   // Demo data if no CSV uploaded
   const demoKpis = [
     { label: "Total Sales", value: "$142,850.00", trend: "+12.5%", color: "var(--success)", icon: Zap, sparkData: [{v: 10}, {v: 15}, {v: 8}, {v: 25}, {v: 18}, {v: 40}] },
@@ -129,18 +151,26 @@ export default function Dashboard({ dataInfo }) {
           </div>
         </Card>
 
-        <Card title="Growth Analysis" icon={TrendingUp}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-            <ProgressBar label="Mobile Devices" pct="+24.8%" val={75} />
-            <ProgressBar label="Cloud Infrastructure" pct="+18.2%" val={60} />
-            <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: 16, display: 'flex', gap: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Sparkles size={16} color="var(--success)" />
+        <Card title="AI Data Insights" icon={Sparkles}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {isLoadingInsights ? (
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Generating deep AI insights...</div>
+            ) : aiInsights ? (
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.05)', 
+                border: '1px solid rgba(16, 185, 129, 0.1)', 
+                padding: '16px', 
+                borderRadius: 16, 
+                fontSize: 13, 
+                lineHeight: 1.6,
+                maxHeight: '300px',
+                overflowY: 'auto'
+              }}>
+                <ReactMarkdown>{aiInsights}</ReactMarkdown>
               </div>
-              <div style={{ fontSize: 13, lineHeight: 1.6 }}>
-                <span style={{ fontWeight: 700, color: 'var(--success)' }}>AI Insight:</span> Dataset <span style={{ fontWeight: 700 }}>{dataInfo?.filename || "Alpha"}</span> is loaded and ready for deep learning predictions.
-              </div>
-            </div>
+            ) : (
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Upload a dataset to generate AI insights.</div>
+            )}
           </div>
         </Card>
 
