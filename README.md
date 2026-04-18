@@ -1,109 +1,42 @@
-# ⚡ DataCopilot: Startup Management & Analytics Platform
+# DataCopilot AI 🚀
 
-**DataCopilot** is a premium, high-performance analytical engine designed for startups to manage teams, projects, and data-driven insights in a single, unified interface. Built with a **Cyber-Teal Matrix** aesthetic, it combines raw power (FastAPI + Pandas) with modern aesthetics (React + Framer Motion).
+![Project Status](https://img.shields.io/badge/Project%20Status-80%25%20Completed-brightgreen?style=for-the-badge)
 
----
+DataCopilot is a cutting-edge, AI-driven analytics dashboard designed specifically for modern startup ecosystems. By bridging the gap between structured databases and Natural Language Processing, this platform allows teams to upload flat-file CSVs, generate instant heuristics, chat directly with their data using Google's GenAI infrastructure, and automatically map insight outputs into fully exportable Client Summaries.
 
-## 📈 Project Progress [ ▓▓▓▓▓▓░░░░ 60% ]
-The project is currently in **Phase 2 (Interaction & Persistence)**. Core analytics and project management foundations are live, with advanced AI features and automated reporting currently under development.
+## ✨ Core Features
+- **AI File Analysis**: Drag and drop CSV datasets to instantly extract data heuristics, missing configurations, and typed schemas.
+- **Conversational Matrix**: Ask analytical questions directly to your data environment in plain English, completely eliminating the need for SQL.
+- **Automated Client Reporting**: Programmatically map ML context to render beautiful, downloadable Markdown reports.
+- **Dynamic Startup Workspace**: Manage team squad rosters, toggle dynamic Kanban priorities, and explore software workflows.
+- **Integrated ML Models**: Generate linear regression mapping or churn predictions instantly using standard Python Data Science pipelines.
 
-| Feature Area | Status | Progress |
-| :--- | :--- | :--- |
-| **Data Engine** | Fully Operational | 100% |
-| **Authentication** | Active (MongoDB) | 90% |
-| **Analytics Dashboard** | Live (Dynamic) | 85% |
-| **Project Management** | Functional (Kanban) | 70% |
-| **ML Module** | Working (Random Forest) | 60% |
-| **AI Conversations** | Experimental | 40% |
-| **Client Reporting** | UI Placeholder | 20% |
-| **Notifications/API Sync** | Planning | 5% |
+## 🛠 Technical Stack
+- **Frontend Core**: React 18 powered by Vite.
+- **Styling Architecture**: Raw scalable CSS paired intricately with Framer Motion (micro-animations) and Lucide-React.
+- **Backend Infrastructure**: Python-based FastAPI server processing synchronous and asynchronous execution pipelines.
+- **Database**: MongoDB Atlas driven natively via `motor` asynchronously.
+- **Language Models**: Powered natively by Google GenAI SDK (`gemini-2.5-flash`).
 
----
+## 🚀 Quickstart Guide
 
-## 🚀 Core Features
-
-### 📊 1. Data Analytics & ML Engine
-*   **CSV Intelligence**: Drag-and-drop CSV upload for real-time automated EDA.
-*   **Dynamic Dashboard**: KPI cards and interactive charts that auto-populate based on your dataset schema.
-*   **ML Pipeline**: Select features and targets to train Random Forest models directly in the browser.
-*   **AI Chat (NLP)**: Query your data using natural language (e.g., "What is the average sales in March?").
-
-### 💼 2. Startup OS (Management)
-*   **Project Board (Kanban)**: Track tasks through Backlog, In-Progress, Review, and Completed columns.
-*   **Team Squad**: Monitor team workload, skill distribution, and real-time availability.
-*   **Synthesis Reports**: Auto-generated client-ready summaries with budget warnings and efficiency alerts.
-
-### 🌓 3. Visual Experience
-*   **Cyber-Teal Theme**: Ultra-high contrast pure black background with vibrant teal accents.
-*   **Glassmorphic UI**: Smooth transitions, hover glows, and responsive elevations.
-*   **Theme Engine**: Intelligent Dark/Light mode switching.
-
----
-
-## 🛠️ Tech Stack
-
-### **Frontend**
-*   **Framework**: React.js + Vite
-*   **Aesthetics**: Vanilla CSS (Custom Variable Engine) + Framer Motion
-*   **Charts**: Recharts (D3-based)
-*   **Icons**: Lucide React
-
-### **Backend**
-*   **Engine**: FastAPI (Python)
-*   **Analysis**: Pandas, NumPy
-*   **AI/ML**: Scikit-learn
-*   **Persistence**: MongoDB (Motor / Async Pymongo)
-
----
-
-## ⚙️ Project Structure
-
-```bash
-├── backend/
-│   ├── main.py             # FastAPI entry point
-│   ├── database.py         # MongoDB connection
-│   ├── services/
-│   │   ├── analysis_service.py  # CSV & Query logic
-│   │   ├── ml_service.py        # RF Training pipeline
-│   │   └── project_service.py   # Task/Team CRUD
-│   └── requirements.txt
-└── frontend/
-    ├── src/
-    │   ├── components/     # Modular UI sections
-    │   ├── App.jsx         # Main router and state
-    │   └── index.css       # Global Cyber-Teal styles
-    └── package.json
-```
-
----
-
-## 🛠️ Quick Setup
-
-### 1. Backend Initialization
+### 1. Launch the Backend API
+Navigate to the `backend` directory, bind your local environment, and execute the backend framework:
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
 ```
-*Note: Ensure MongoDB is running on `localhost:27017`.*
+The backend engine natively serves requests via `http://localhost:8010`. *Note: An active MongoDB environment or Atlas string is required inside `database.py`.*
 
-### 2. Frontend Initialization
+### 2. Deploy the Frontend Gateway
+Initialize the client via `npm` inside the `frontend` directory:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+The system dashboard can immediately be accessed through Vite at `http://localhost:5173`. 
 
 ---
-
-## 📈 Roadmap 2026
-- [x] Phase 1: Analytics & CSV Exploration
-- [x] Phase 2: Project Management & Teams
-- [ ] Phase 3: AI-Suggested Team Allocation (ML based on project risk)
-- [ ] Phase 4: Automated PDF/Excel Client Reporting
-- [ ] Phase 5: Slack/Teams Notification Integration
-
----
-
-**Developed with ❤️ for Advanced Agentic Coding.**
-**© 2026 DataCopilot AI. Premium Startup Solutions.**
+*Developed by Harsh.*

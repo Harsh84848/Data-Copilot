@@ -33,9 +33,10 @@ def read_root():
 async def signup(request: Dict[str, str]):
     email = request.get("email")
     password = request.get("password")
+    role = request.get("role", "customer")
     if not email or not password:
         raise HTTPException(status_code=400, detail="Missing email or password.")
-    return await signup_user(email, password)
+    return await signup_user(email, password, role)
 
 @app.post("/login")
 async def login(request: Dict[str, str]):

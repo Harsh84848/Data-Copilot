@@ -1,12 +1,12 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-import os
+from pymongo.server_api import ServerApi
 
-# You can replace this with your MongoDB Atlas URI
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-DB_NAME = "datacopilot"
+uri = "mongodb+srv://datacopilot:kJl8CJgROTtKInU7@cluster0.if12nyw.mongodb.net/?appName=Cluster0"
 
-client = AsyncIOMotorClient(MONGO_URI)
-db = client[DB_NAME]
+# Connect via async Motor driver using the provided Atlas URI
+client = AsyncIOMotorClient(uri, server_api=ServerApi('1'))
+db = client["datacopilot"]
 
 async def get_db():
+    """Returns the async MongoDB database instance"""
     return db

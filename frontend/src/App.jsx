@@ -10,9 +10,11 @@ import Login from "./components/Login";
 import MLModels from "./components/MLModels";
 import Settings from "./components/Settings";
 import Conversations from "./components/Conversations";
-import ProjectBoard from "./components/ProjectBoard";
-import TeamSquad from "./components/TeamSquad";
+import ProjectBoard, { SAMPLE_TASKS } from "./components/ProjectBoard";
+import TeamSquad, { INITIAL_TEAM } from "./components/TeamSquad";
 import ClientReports from "./components/ClientReports";
+import SupportPanel from "./components/SupportPanel";
+import SRS from "./components/SRS";
 
 // Icons for the empty state
 import { Sparkles } from "lucide-react";
@@ -20,7 +22,7 @@ import { Sparkles } from "lucide-react";
 const API_BASE_URL = "http://localhost:8010";
 
 export default function App() {
-  const [user, setUser] = useState({ email: "demo@datacopilot.ai" });
+  const [user, setUser] = useState(null);
   const [dataInfo, setDataInfo] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [queryInput, setQueryInput] = useState("");
@@ -29,6 +31,31 @@ export default function App() {
   const [isAnalysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
   const [theme, setTheme] = useState("dark");
   const chatEndRef = useRef();
+
+  // Lifted state for live stats
+  const [tasks, setTasks] = useState([]);
+  const [usingLocalTasks, setUsingLocalTasks] = useState(false);
+  const [team, setTeam] = useState(INITIAL_TEAM);
+
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/tasks`);
+      const data = res.data;
+      if (Array.isArray(data) && data.length > 0) {
+        setTasks(data);
+      } else {
+        setTasks(SAMPLE_TASKS);
+        setUsingLocalTasks(true);
+      }
+    } catch (err) {
+      setTasks(SAMPLE_TASKS);
+      setUsingLocalTasks(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(scrollToBottom, [messages]);
@@ -84,9 +111,11 @@ export default function App() {
       case "ml": return <MLModels dataInfo={dataInfo} API_BASE_URL={API_BASE_URL} />;
       case "chat": return <Conversations messages={messages} queryInput={queryInput} setQueryInput={setQueryInput} askData={askData} chatEndRef={chatEndRef} />;
       case "settings": return <Settings user={user} />;
-      case "projects": return <ProjectBoard />;
-      case "team": return <TeamSquad />;
-      case "reports": return <ClientReports />;
+      case "projects": return <ProjectBoard tasks={tasks} setTasks={setTasks} fetchTasks={fetchTasks} usingLocal={usingLocalTasks} />;
+      case "team": return <TeamSquad team={team} setTeam={setTeam} />;
+      case "reports": return <ClientReports dataInfo={dataInfo} API_BASE_URL={API_BASE_URL} />;
+      case "srs": return <SRS />;
+      case "support": return <SupportPanel />;
       default: return <Dashboard dataInfo={dataInfo} />;
     }
   };
@@ -98,7 +127,9 @@ export default function App() {
         dataInfo={dataInfo} 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        handleUpload={handleUpload} 
+        handleUpload={handleUpload}
+        teamCount={team.length}
+        tasksCount={tasks.filter(t => t.status !== 'done').length}
       />
 
       {/* ─── Main Content Area ─── */}
@@ -111,10 +142,11 @@ export default function App() {
           setActiveTab={setActiveTab}
           theme={theme}
           toggleTheme={toggleTheme}
+          notificationsCount={tasks.filter(t => t.status === 'todo').length}
         />
 
         {/* Dynamic View */}
-        {!dataInfo && !['projects', 'team', 'reports', 'settings'].includes(activeTab) ? (
+        {!dataInfo && !['projects', 'team', 'reports', 'srs', 'settings', 'support'].includes(activeTab) ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', maxWidth: 400 }}>
               <div style={{ 
