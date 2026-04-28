@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import { 
   FileText, Download, Share2, Eye, Calendar, User, LayoutGrid, CheckCircle2, AlertTriangle, BarChart3, Clock, MoreHorizontal
 } from "lucide-react";
@@ -17,11 +18,11 @@ export default function ClientReports({ dataInfo, API_BASE_URL }) {
     }
     setGenerating(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/query`, { 
-        query: "Generate a formal, structured executive summary report of the currently loaded dataset. Format it using Markdown. Include sections for Data Overview, Key Findings, and Strategic Recommendations." 
+      const res = await axios.post(`${API_BASE_URL}/generate-report`, { 
+        dataInfo: dataInfo 
       });
       
-      const content = res.data.text;
+      const content = res.data.report;
       const newReport = {
         id: `REP-${String(reports.length + 1).padStart(3, '0')}`,
         name: `Automated ${dataInfo.filename.replace('.csv', '')} Summary`,
@@ -108,8 +109,8 @@ export default function ClientReports({ dataInfo, API_BASE_URL }) {
                 <AnimatePresence>
                   {expandedId === r.id && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
-                      <div style={{ margin: '12px 12px 24px', padding: 24, background: 'rgba(0,0,0,0.15)', borderRadius: 16, border: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                        {r.content}
+                      <div className="markdown-body" style={{ margin: '12px 12px 24px', padding: 32, background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', color: 'var(--text-main)', fontSize: 15, lineHeight: 1.8 }}>
+                        <ReactMarkdown>{r.content}</ReactMarkdown>
                       </div>
                     </motion.div>
                   )}

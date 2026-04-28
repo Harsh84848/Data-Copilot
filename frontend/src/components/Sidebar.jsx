@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Plus, Activity, BrainCircuit, MessageSquare, Settings, 
-  Table as TableIcon, AlertCircle, Zap, LayoutGrid, Users as People, FileText, ChevronRight, BookOpen
+  Table as TableIcon, AlertCircle, Zap, LayoutGrid, Users as People, FileText, ChevronRight, BookOpen, Bot
 } from "lucide-react";
 
 export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUpload, teamCount, tasksCount }) {
@@ -32,8 +32,8 @@ export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUploa
             textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             boxShadow: '0 8px 20px -5px var(--primary-glow)'
           }}>
-            <Plus size={18} /> Upload CSV
-            <input type="file" hidden accept=".csv" onChange={handleUpload} />
+            <Plus size={18} /> Upload Data
+            <input type="file" multiple hidden accept=".csv,.xlsx,.xls,.json" onChange={handleUpload} />
           </div>
         </label>
 
@@ -49,6 +49,7 @@ export default function Sidebar({ dataInfo, activeTab, setActiveTab, handleUploa
         </div>
         <SidebarItem icon={LayoutGrid} text="Project Board" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} badge={tasksCount} />
         <SidebarItem icon={People} text="Team Squad" active={activeTab === "team"} onClick={() => setActiveTab("team")} badge={teamCount} />
+        <SidebarItem icon={Bot} text="Agentic Workflows" active={activeTab === "workflows"} onClick={() => setActiveTab("workflows")} />
         <SidebarItem icon={FileText} text="Client Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
         <SidebarItem icon={BookOpen} text="SRS Document" active={activeTab === "srs"} onClick={() => setActiveTab("srs")} />
 

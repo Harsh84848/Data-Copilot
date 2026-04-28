@@ -129,6 +129,18 @@ export default function MLModels({ dataInfo, API_BASE_URL }) {
                   ))}
                 </div>
               </div>
+              
+              {result.business_report && (
+                <div className="card" style={{ padding: 32, background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(139, 92, 246, 0.1))', border: '1px solid var(--success)55' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <Sparkles size={20} color="var(--success)" />
+                    <h3 style={{ margin: 0 }}>AI Business Synthesis</h3>
+                  </div>
+                  <p style={{ fontSize: 15, color: 'var(--text-main)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
+                    {result.business_report}
+                  </p>
+                </div>
+              )}
             </motion.div>
           )}
         </div>

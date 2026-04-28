@@ -26,9 +26,20 @@ def train_predict_model(df, target, features=[]):
     feat_imp = [{"feature": f, "importance": float(i)} for f, i in zip(X.columns, importances)]
     feat_imp = sorted(feat_imp, key=lambda x: x["importance"], reverse=True)[:5]
     
+    business_report = "Unable to generate business synthesis."
+    try:
+        from services.ai_service import client
+        if client:
+            prompt = f"A Machine Learning model was trained to predict '{target}'. The model achieved a score of {score:.2f}. The most important features driving this prediction are: {', '.join([f['feature'] for f in feat_imp])}. Write a concise, 2-sentence business insight interpreting this. For example, 'Sales dropped by 10% primarily driven by X and Y. Focusing on Z could improve future outcomes.'"
+            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
+            business_report = response.text
+    except Exception:
+        pass
+    
     return {
         "score": float(score),
         "type": "Regression" if is_regression else "Classification",
         "topFeatures": feat_imp,
-        "insight": f"Model trained with {score:.2f} {'R2 score' if is_regression else 'Accuracy'}."
+        "insight": f"Model trained with {score:.2f} {'R2 score' if is_regression else 'Accuracy'}.",
+        "business_report": business_report
     }

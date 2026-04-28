@@ -15,6 +15,7 @@ import TeamSquad, { INITIAL_TEAM } from "./components/TeamSquad";
 import ClientReports from "./components/ClientReports";
 import SupportPanel from "./components/SupportPanel";
 import SRS from "./components/SRS";
+import AgenticWorkflows from "./components/AgenticWorkflows";
 
 // Icons for the empty state
 import { Sparkles } from "lucide-react";
@@ -68,15 +69,18 @@ export default function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     setLoading(true);
     const formData = new FormData();
-    formData.append("file", file);
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
     try {
       const res = await axios.post(`${API_BASE_URL}/upload`, formData);
       setDataInfo(res.data);
-      setMessages([{ role: "ai", text: `I've analyzed **${file.name}**. Dashboard is ready for exploration!` }]);
+      const nameText = files.length === 1 ? files[0].name : `${files.length} datasets`;
+      setMessages([{ role: "ai", text: `I've analyzed **${nameText}**. Dashboard is ready for exploration!` }]);
     } catch (err) {
       alert("Backend error. Check if it's running.");
     }
@@ -107,16 +111,17 @@ export default function App() {
   // Define views mapping for better routing
   const renderView = () => {
     switch (activeTab) {
-      case "dashboard": return <Dashboard dataInfo={dataInfo} />;
+      case "dashboard": return <Dashboard dataInfo={dataInfo} setDataInfo={setDataInfo} />;
       case "ml": return <MLModels dataInfo={dataInfo} API_BASE_URL={API_BASE_URL} />;
       case "chat": return <Conversations messages={messages} queryInput={queryInput} setQueryInput={setQueryInput} askData={askData} chatEndRef={chatEndRef} />;
       case "settings": return <Settings user={user} />;
       case "projects": return <ProjectBoard tasks={tasks} setTasks={setTasks} fetchTasks={fetchTasks} usingLocal={usingLocalTasks} />;
       case "team": return <TeamSquad team={team} setTeam={setTeam} />;
       case "reports": return <ClientReports dataInfo={dataInfo} API_BASE_URL={API_BASE_URL} />;
+      case "workflows": return <AgenticWorkflows />;
       case "srs": return <SRS />;
       case "support": return <SupportPanel />;
-      default: return <Dashboard dataInfo={dataInfo} />;
+      default: return <Dashboard dataInfo={dataInfo} setDataInfo={setDataInfo} />;
     }
   };
 
@@ -146,7 +151,7 @@ export default function App() {
         />
 
         {/* Dynamic View */}
-        {!dataInfo && !['projects', 'team', 'reports', 'srs', 'settings', 'support'].includes(activeTab) ? (
+        {!dataInfo && !['projects', 'team', 'reports', 'srs', 'settings', 'support', 'workflows'].includes(activeTab) ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', maxWidth: 400 }}>
               <div style={{ 
@@ -157,7 +162,7 @@ export default function App() {
               </div>
               <h3>Ready to explore your startup?</h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Upload any CSV to start analytics, or head to the <b>Project Board</b> to manage your team and tasks.
+                Upload any data file (CSV, Excel, JSON) to start analytics, or head to the <b>Project Board</b> to manage your team and tasks.
               </p>
             </div>
           </div>

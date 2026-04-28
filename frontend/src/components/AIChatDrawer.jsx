@@ -1,11 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Search } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from "recharts";
+import { Sparkles, Search, Mic, MicOff } from "lucide-react";
+import DynamicChart from "./DynamicChart";
 
 export default function AIChatDrawer({ isOpen, onClose, messages, queryInput, setQueryInput, askData, chatEndRef }) {
+  const [isListening, setIsListening] = useState(false);
+  
+  let recognition = null;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQueryInput(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  }
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognition?.stop();
+      setIsListening(false);
+    } else {
+      recognition?.start();
+      setIsListening(true);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -30,10 +63,8 @@ export default function AIChatDrawer({ isOpen, onClose, messages, queryInput, se
                   </div>
                 </div>
                 {m.chart && (
-                  <div style={{ marginTop: 12, padding: 16, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, width: '100%' }}>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChartComponent chart={m.chart} />
-                    </ResponsiveContainer>
+                  <div style={{ marginTop: 12, width: '100%' }}>
+                    <DynamicChart config={m.chart} />
                   </div>
                 )}
               </div>
@@ -49,7 +80,12 @@ export default function AIChatDrawer({ isOpen, onClose, messages, queryInput, se
                 placeholder="Ask for deeper analysis..." 
                 style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: 14, outline: 'none' }} 
               />
-              <button onClick={askData} style={{ background: 'var(--primary)', border: 'none', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {recognition && (
+                <button onClick={toggleListening} style={{ background: isListening ? '#ef4444' : 'transparent', border: '1px solid var(--border)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s' }}>
+                  {isListening ? <MicOff size={16} color="white" /> : <Mic size={16} color="white" />}
+                </button>
+              )}
+              <button onClick={askData} style={{ background: 'var(--primary)', border: 'none', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <Search size={16} color="white" />
               </button>
             </div>
@@ -59,12 +95,3 @@ export default function AIChatDrawer({ isOpen, onClose, messages, queryInput, se
     </AnimatePresence>
   );
 }
-
-const BarChartComponent = ({ chart }) => (
-  <BarChart data={chart.data}>
-    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-    <XAxis dataKey={chart.xKey} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10}} />
-    <Bar dataKey={chart.yKey} fill="var(--primary)" radius={[4, 4, 0, 0]} />
-    <Tooltip contentStyle={{background: '#16161a'}} />
-  </BarChart>
-);

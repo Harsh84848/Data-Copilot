@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 import uvicorn
 
 # Import Services
-from services.analysis_service import process_csv_file, query_dataframe
+from services.analysis_service import process_multiple_data_files, query_dataframe
 from services.ml_service import train_predict_model
 from services.auth_service import signup_user, login_user
 from services.project_service import get_all_tasks, create_task, update_task_status, get_team
@@ -72,18 +72,37 @@ async def team_get():
 
 # Analytics Routes
 @app.post("/upload")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_file(files: List[UploadFile] = File(...)):
     global current_df
-    if not file.filename.endswith('.csv'):
-        raise HTTPException(status_code=400, detail="Only CSV files are allowed.")
+    allowed_extensions = ('.csv', '.xlsx', '.xls', '.json')
     
-    contents = await file.read()
+    file_data_list = []
+    for file in files:
+        if not file.filename.lower().endswith(allowed_extensions):
+            raise HTTPException(status_code=400, detail="Only CSV, Excel, and JSON files are allowed.")
+        contents = await file.read()
+        file_data_list.append((contents, file.filename))
+        
     try:
-        result = process_csv_file(contents, file.filename)
+        from services.analysis_service import process_multiple_data_files
+        result = process_multiple_data_files(file_data_list)
         current_df = result["df"]
         return result["payload"]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
+
+@app.post("/clean")
+async def clean_data():
+    global current_df
+    if current_df is None:
+        raise HTTPException(status_code=400, detail="No data uploaded.")
+    from services.analysis_service import clean_dataframe
+    try:
+        result = clean_dataframe(current_df)
+        current_df = result["df"]
+        return result["payload"]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error cleaning data: {str(e)}")
 
 @app.post("/query")
 async def query_data(request: Dict[str, str]):
@@ -145,5 +164,15 @@ async def get_ai_insights():
     insights = get_data_insights(payload)
     return {"insights": insights}
 
+@app.post("/generate-report")
+async def generate_report_endpoint(request: Dict[str, Any]):
+    from services.ai_service import generate_detailed_report
+    # request should contain the dataInfo payload
+    payload = request.get("dataInfo")
+    if not payload:
+        raise HTTPException(status_code=400, detail="Missing dataInfo payload.")
+    report_text = generate_detailed_report(payload)
+    return {"report": report_text}
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8010)
+    uvicorn.run("main:app", host="0.0.0.0", port=8010, reload=True)

@@ -10,9 +10,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function Dashboard({ dataInfo }) {
+export default function Dashboard({ dataInfo, setDataInfo }) {
   const [aiInsights, setAiInsights] = useState(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
 
   useEffect(() => {
     if (dataInfo) {
@@ -31,6 +32,21 @@ export default function Dashboard({ dataInfo }) {
     }
     setIsLoadingInsights(false);
   };
+
+  const handleCleanData = async () => {
+    if (!dataInfo) return;
+    setIsCleaning(true);
+    try {
+      const res = await axios.post('http://localhost:8010/clean');
+      setDataInfo(res.data);
+      alert("Data cleaned successfully! Nulls imputed and outliers handled.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to clean data.");
+    }
+    setIsCleaning(false);
+  };
+
   // Demo data if no CSV uploaded
   const demoKpis = [
     { label: "Total Sales", value: "$142,850.00", trend: "+12.5%", color: "var(--success)", icon: Zap, sparkData: [{v: 10}, {v: 15}, {v: 8}, {v: 25}, {v: 18}, {v: 40}] },
@@ -65,7 +81,12 @@ export default function Dashboard({ dataInfo }) {
           <p style={{ color: 'var(--text-muted)', fontSize: 15, marginTop: 4 }}>Real-time analytical overview of {dataInfo ? dataInfo.filename : 'Project Alpha'} metrics.</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}>Export</button>
+          {dataInfo && (
+            <button onClick={handleCleanData} disabled={isCleaning} style={{ background: 'linear-gradient(45deg, #ec4899, #8b5cf6)', border: 'none', color: 'white', padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', cursor: isCleaning ? 'not-allowed' : 'pointer', opacity: isCleaning ? 0.7 : 1 }}>
+              <Sparkles size={16} /> {isCleaning ? 'Cleaning...' : 'Magic Clean'}
+            </button>
+          )}
+          <button onClick={() => window.print()} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Export PDF</button>
           <button style={{ background: 'var(--primary)', border: 'none', color: 'white', padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 700 }}>Refresh Data</button>
         </div>
       </div>

@@ -1,10 +1,43 @@
-import React from 'react';
-import { MessageSquare, Sparkles, Search, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
-import AIChatDrawer from "./AIChatDrawer";
+import React, { useState, useEffect } from 'react';
+import { MessageSquare, Sparkles, Search, Mic, MicOff } from "lucide-react";
+import DynamicChart from "./DynamicChart";
 
 export default function ConversationsView({ messages, queryInput, setQueryInput, askData, chatEndRef }) {
-  // We reuse the AIChatDrawer logic but in a full page layout
+  const [isListening, setIsListening] = useState(false);
+  
+  let recognition = null;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQueryInput(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  }
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognition?.stop();
+      setIsListening(false);
+    } else {
+      recognition?.start();
+      setIsListening(true);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', height: '100%', flex: 1, overflow: 'hidden' }}>
       <div style={{ width: 300, borderRight: '1px solid var(--border)', background: 'rgba(255,255,255,0.01)', display: 'flex', flexDirection: 'column' }}>
@@ -50,7 +83,7 @@ export default function ConversationsView({ messages, queryInput, setQueryInput,
                     {m.role === 'ai' && <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--primary)22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Sparkles size={16} color="var(--primary)" /></div>}
                     <div style={{ padding: '16px 20px', borderRadius: 20, background: m.role === 'user' ? 'var(--primary)' : 'var(--bg-card)', fontSize: 15, lineHeight: 1.6, border: m.role === 'user' ? 'none' : '1px solid var(--border)', color: 'white' }}>
                       {m.text}
-                      {m.chart && <div style={{ marginTop: 20, fontSize: 12, color: 'var(--primary)', fontWeight: 700 }}>Chart generated below.</div>}
+                      {m.chart && <DynamicChart config={m.chart} />}
                     </div>
                   </div>
                 </div>
@@ -69,6 +102,11 @@ export default function ConversationsView({ messages, queryInput, setQueryInput,
               placeholder="Type your question..." 
               style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: 16, outline: 'none' }} 
             />
+            {recognition && (
+              <button onClick={toggleListening} style={{ background: isListening ? '#ef4444' : 'var(--bg-card)', border: '1px solid var(--border)', width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s' }}>
+                {isListening ? <MicOff size={20} color="white" /> : <Mic size={20} color="white" />}
+              </button>
+            )}
             <button onClick={askData} style={{ background: 'var(--primary)', border: 'none', width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Search size={20} color="white" />
             </button>

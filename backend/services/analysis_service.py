@@ -2,14 +2,71 @@ import pandas as pd
 import io
 import numpy as np
 
-def process_csv_file(contents, filename):
-    df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
+def process_multiple_data_files(file_data_list):
+    dfs = []
+    filenames = []
+    for contents, filename in file_data_list:
+        filename_lower = filename.lower()
+        if filename_lower.endswith('.csv'):
+            df = pd.read_csv(io.BytesIO(contents))
+        elif filename_lower.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(io.BytesIO(contents))
+        elif filename_lower.endswith('.json'):
+            df = pd.read_json(io.BytesIO(contents))
+        else:
+            raise ValueError(f"Unsupported file format: {filename}")
+        dfs.append(df)
+        filenames.append(filename)
+        
+    if not dfs:
+        raise ValueError("No valid data files provided.")
+        
+    combined_df = pd.concat(dfs, ignore_index=True)
+    
+    headers = list(combined_df.columns)
+    col_types = {col: str(combined_df[col].dtype) for col in headers}
+    summary = combined_df.describe().to_dict()
+    missing = combined_df.isnull().sum().to_dict()
+    
+    # KPIs for dashboard
+    numeric_cols = combined_df.select_dtypes(include=[np.number]).columns.tolist()
+    kpis = {
+        "total_records": len(combined_df),
+        "total_cols": len(headers),
+        "total_missing": int(combined_df.isnull().sum().sum()),
+        "numeric_avg": float(combined_df[numeric_cols[0]].mean()) if numeric_cols else 0
+    }
+    
+    return {
+        "df": combined_df,
+        "payload": {
+            "filename": ", ".join(filenames)[:50] + ("..." if len(", ".join(filenames)) > 50 else ""),
+            "rows": len(combined_df),
+            "cols": len(headers),
+            "headers": headers,
+            "col_types": col_types,
+            "missing": missing,
+            "summary": summary,
+            "kpis": kpis,
+            "sample_rows": combined_df.head(10).fillna('').to_dict('records')
+        }
+    }
+
+def clean_dataframe(df):
+    # Impute missing values
+    for col in df.columns:
+        if df[col].isnull().sum() > 0:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                df[col] = df[col].fillna(df[col].median())
+            else:
+                df[col] = df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else "Unknown")
+    
+    # After cleaning, we return the exact same payload structure as process_csv_file
     headers = list(df.columns)
     col_types = {col: str(df[col].dtype) for col in headers}
     summary = df.describe().to_dict()
     missing = df.isnull().sum().to_dict()
     
-    # KPIs for dashboard
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     kpis = {
         "total_records": len(df),
@@ -21,7 +78,7 @@ def process_csv_file(contents, filename):
     return {
         "df": df,
         "payload": {
-            "filename": filename,
+            "filename": "Cleaned_Data",
             "rows": len(df),
             "cols": len(headers),
             "headers": headers,
