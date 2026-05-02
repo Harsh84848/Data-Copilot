@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import AIChatDrawer from "./components/AIChatDrawer";
-import Login from "./components/Login";
+
 import MLModels from "./components/MLModels";
 import Settings from "./components/Settings";
 import Conversations from "./components/Conversations";
@@ -23,7 +23,7 @@ import { Sparkles } from "lucide-react";
 const API_BASE_URL = "http://localhost:8010";
 
 export default function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({ name: "Admin", email: "admin@example.com" });
   const [dataInfo, setDataInfo] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [queryInput, setQueryInput] = useState("");
@@ -104,9 +104,7 @@ export default function App() {
     setLoading(false);
   };
 
-  if (!user) {
-    return <Login onLogin={setUser} />;
-  }
+
 
   // Define views mapping for better routing
   const renderView = () => {
